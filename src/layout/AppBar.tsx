@@ -76,9 +76,15 @@ export default function DrawerAppBar(props: Props) {
           </Typography>
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
             {navItems.map((item) => (
-              <Button key={item} sx={{ color: "#fff" }}>
-                <Link to={"/" + item.toLowerCase()}>{item}</Link>
-              </Button>
+              <Link
+                to={"/" + item.toLowerCase()}
+                style={{ textDecoration: "none" }}
+                key={item}
+              >
+                <Button key={item} sx={{ color: "#fff" }}>
+                  {item}
+                </Button>
+              </Link>
             ))}
           </Box>
         </Toolbar>

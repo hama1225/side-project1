@@ -1,5 +1,5 @@
 import React from "react";
-import AboutContainer from "../components/AboutContainer";
+import AboutContainer from "../components/about/AboutContainer";
 
 function About() {
   return <AboutContainer />;
