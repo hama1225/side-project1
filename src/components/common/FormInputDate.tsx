@@ -2,7 +2,8 @@ import React from "react";
 import { Controller } from "react-hook-form";
 import DatePicker from "react-date-picker";
 import { FormInputProps } from "./FormProps";
-export const FormInputDate = ({ name, control, label }: FormInputProps) => {
+
+export const FormInputDate = ({ name, control }: FormInputProps) => {
   return (
     <Controller
       name={name}

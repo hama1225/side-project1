@@ -1,7 +1,7 @@
 import React from "react";
-import { Select, InputLabel, MenuItem } from "@mui/material";
+import { Select, InputLabel, MenuItem, FormControl } from "@mui/material";
 
-import { useFormContext, Controller } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { FormOptionProps } from "./FormProps";
 
 export const FormInputDropdown = ({
@@ -24,9 +24,12 @@ export const FormInputDropdown = ({
       control={control}
       name={name}
       render={({ field: { onChange, value } }) => (
-        <Select onChange={onChange} value={value}>
-          {generateSelectOptions()}
-        </Select>
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">{name}</InputLabel>
+          <Select onChange={onChange} value={value}>
+            {generateSelectOptions()}
+          </Select>
+        </FormControl>
       )}
     />
   );

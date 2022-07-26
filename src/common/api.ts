@@ -18,7 +18,6 @@ let apiNaverAxios = axiosGlobal.create({
   timeout: 30000,
   withCredentials: false,
   headers: {
-    Accept: "application/json, text/plain, */*",
     "Content-Type": "application/json",
     "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID as string,
     "X-Naver-Client-SECRET": process.env
@@ -28,7 +27,7 @@ let apiNaverAxios = axiosGlobal.create({
 
 export async function apiPost(url: string, data: object, headers?: any) {
   try {
-    return await apiAxios.post(apiUrl + url, data, { headers });
+    return await apiAxios.post(url, data, { headers });
   } catch (e) {
     throw e;
   }
@@ -44,7 +43,7 @@ export async function apiGet(url: string, headers?: any) {
 
 export async function apiNaverPost(url: string, data: object, headers?: any) {
   try {
-    return await apiAxios.post(apiUrl + url, data, { headers });
+    return await apiNaverAxios.post(apiNaverUrl + url, data, { headers });
   } catch (e) {
     throw e;
   }
@@ -52,7 +51,7 @@ export async function apiNaverPost(url: string, data: object, headers?: any) {
 
 export async function apiNaverGet(url: string, headers?: any) {
   try {
-    return await apiAxios.get(apiUrl + url, { headers });
+    return await apiNaverAxios.get(apiNaverUrl + url, { headers });
   } catch (e) {
     throw e;
   }

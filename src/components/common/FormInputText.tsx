@@ -6,7 +6,7 @@ import { FormInputProps } from "./FormProps";
 function FormInputText({ name, control, label }: FormInputProps) {
   return (
     <Controller
-      name="groupName"
+      name={name}
       control={control}
       render={({ field: { onChange, value } }) => (
         <TextField

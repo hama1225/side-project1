@@ -2,28 +2,19 @@ import React, { useCallback, useState } from "react";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { InputLabel, TextField } from "@mui/material";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-
-import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import ControlPointIcon from "@mui/icons-material/ControlPoint";
+import IconButton from "@mui/material/IconButton";
+import { useForm } from "react-hook-form";
 import { useTitle } from "ahooks";
-import DatePicker from "react-date-picker";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../store";
-import {
-  naverSearchTrendSelector,
-  updateEndDate,
-  updateStartDate,
-} from "../../../store/naver/searchTrend";
+import { fetchGetNaverSearchTrend } from "../../../store/naver/searchTrend";
 import { dateToString } from "../../../common/utils";
-import { NaverSearchRequestType } from "../../../api/naver";
-import FormInputText from "../../common/FormInputText";
 import { FormInputDate } from "../../common/FormInputDate";
 import { FormInputDropdown } from "../../common/FormInputDropdown";
+import GroupNameInput from "./GroupNameInput";
 
 const options = [
   {
@@ -40,34 +31,52 @@ const options = [
   },
 ];
 
+const defaultValues = {
+  timeUnits: "",
+  startDate: new Date(),
+  endDate: new Date(),
+};
+
 function SearchTrend() {
   useTitle("네이버 | 검색 트렌드");
   const dispatch = useDispatch<AppDispatch>();
-  const { register, handleSubmit, reset, control } = useForm();
-  const { data, loading } = useSelector(naverSearchTrendSelector);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [period, setPeriod] = React.useState("");
+  const methods = useForm({ defaultValues });
+  const { handleSubmit, reset, control } = methods;
+  const [searchGroupNum, setSearchGroupNum] = useState(1);
+  // const { data, loading } = useSelector(naverSearchTrendSelector);
+  const onSubmit = useCallback(
+    (data: any) => {
+      data.startDate = dateToString(data.startDate);
+      data.endDate = dateToString(data.endDate);
+      let keywordGroups: { groupName: string; keywords: string[] }[] = [];
+      for (const [key] of Object.entries(data)) {
+        if (key.indexOf("groupName") !== -1) {
+          const number = key.slice(9);
+          const keywords: string[] = [];
+          for (const [key] of Object.entries(data)) {
+            if (key.indexOf(`keyword${number}`) !== -1) {
+              keywords.push(data[key]);
+            }
+          }
+          keywordGroups.push({
+            groupName: data[key],
+            keywords: keywords,
+          });
+        }
+      }
+      const result = {
+        startDate: data.startDate,
+        endDate: data.endDate,
+        timeUnit: data.timeUnits,
+        keywordGroups,
+      };
+      dispatch(fetchGetNaverSearchTrend(result));
+    },
+    [dispatch]
+  );
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setPeriod(event.target.value as string);
-  };
-  const onStartDateChange = useCallback(
-    (value: Date) => {
-      dispatch(updateStartDate(dateToString(value)));
-      setStartDate(value);
-    },
-    [startDate]
-  );
-  const onEndDateChange = useCallback(
-    (value: Date) => {
-      dispatch(updateEndDate(dateToString(value)));
-      setEndDate(value);
-    },
-    [endDate]
-  );
-  const onSubmit = useCallback((data: any) => {
-    console.log(data);
+  const addSearchGroup = useCallback(() => {
+    setSearchGroupNum((prevState) => prevState + 1);
   }, []);
 
   return (
@@ -77,47 +86,48 @@ function SearchTrend() {
       <Box
         component="form"
         sx={{
-          "& > :not(style)": { m: 1, width: "25ch" },
+          display: "block",
         }}
         noValidate
         autoComplete="off"
       >
-        <form>
+        <Box
+          sx={{
+            display: "flex",
+            width: "auto",
+            margin: "10px",
+          }}
+        >
           <FormInputDate name="startDate" control={control} label="startDate" />
           <FormInputDate name="endDate" control={control} label="endDate" />
-          {/*<DatePicker onChange={onStartDateChange} value={startDate} required />*/}
-          {/*<DatePicker onChange={onEndDateChange} value={endDate} required />*/}
-          {/*<FormControl fullWidth>*/}
-          {/*  <InputLabel id="demo-simple-select-label">구간 단위</InputLabel>*/}
-          {/*  <Select*/}
-          {/*    labelId="demo-simple-select-label"*/}
-          {/*    id="period"*/}
-          {/*    value={period}*/}
-          {/*    label="date-period"*/}
-          {/*    onChange={handleChange}*/}
-          {/*  >*/}
-          {/*    <MenuItem value="date">일간</MenuItem>*/}
-          {/*    <MenuItem value="week">주간</MenuItem>*/}
-          {/*    <MenuItem value="month">월간</MenuItem>*/}
-          {/*  </Select>*/}
-          {/*</FormControl>*/}
           <FormInputDropdown
             name="timeUnits"
             control={control}
             options={options}
           />
-          <FormInputText name="groupName" control={control} label="그룹 이름" />
-          <FormInputText name="keyword" control={control} label="키워드" />
-          <Stack direction="row" spacing={2}>
-            <Button
-              type="submit"
-              variant="contained"
-              onClick={handleSubmit(onSubmit)}
-            >
-              분석
-            </Button>
-          </Stack>
-        </form>
+        </Box>
+        <Box>
+          <IconButton aria-label="add" onClick={addSearchGroup}>
+            <ControlPointIcon />
+          </IconButton>
+          {[...Array(searchGroupNum)].map((n, index) => {
+            return (
+              <GroupNameInput control={control} number={index} key={index} />
+            );
+          })}
+        </Box>
+        <Stack direction="row" spacing={2}>
+          <Button
+            type="submit"
+            variant="contained"
+            onClick={handleSubmit(onSubmit)}
+          >
+            분석
+          </Button>
+          <Button variant="contained" onClick={() => reset()}>
+            리셋
+          </Button>
+        </Stack>
       </Box>
     </Box>
   );
